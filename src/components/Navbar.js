@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, User, LogOut, Trophy, BarChart3, Target, Bell, ChevronDown, Settings } from 'lucide-react'
-
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  Trophy,
+  Target,
+  Bell,
+  ChevronDown,
+  Settings
+} from 'lucide-react'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -17,11 +26,11 @@ export default function Navbar() {
     console.log("Logout removido temporariamente")
   }
 
-  const location = useLocation()  
+  const location = useLocation()
 
+  // 🔹 Navegação ajustada
   const navigation = [
-    { name: 'Meus Hábitos', href: '/', icon: BarChart3 },
-    { name: 'Hábitos', href: '/habits', icon: Target },
+    { name: 'Meus Hábitos', href: '/', icon: Target },
     { name: 'Estatísticas', href: '/stats', icon: Trophy },
   ]
 
@@ -107,25 +116,23 @@ export default function Navbar() {
               )}
             </button>
 
-            
-
             {/* Dropdown */}
             <div className="relative user-dropdown">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-300 group"
               >
-                <div className="relative">
-                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                    <User className="w-5 h-5 text-white" />
-                  </div>
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                  <User className="w-5 h-5 text-white" />
                 </div>
+
                 <div className="text-left hidden lg:block">
                   <div className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
                     {user.name}
                   </div>
                   <div className="text-xs text-gray-500">Online</div>
                 </div>
+
                 <ChevronDown
                   className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${
                     isDropdownOpen ? 'rotate-180' : ''
@@ -134,8 +141,7 @@ export default function Navbar() {
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-fadeIn">
-
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="text-sm font-semibold text-gray-900">{user.name}</div>
                     <div className="text-xs text-gray-500 mt-1">{user.email}</div>
@@ -163,7 +169,6 @@ export default function Navbar() {
                       <span>Sair</span>
                     </button>
                   </div>
-
                 </div>
               )}
             </div>
