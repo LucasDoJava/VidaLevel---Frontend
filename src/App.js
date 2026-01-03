@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import Navbar from './components/Navbar.js'
 import MyHabits from './pages/TelaPrincipal'
 import AddHabitPage from './pages/AddHabitos.js'
+import StatsPage from './pages/Estatisticas.js'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
             <Route path="/" element={<MyHabits />} />
             <Route path="*" element={<Navigate to="/" replace />} />
             <Route path="/add-habit" element={<AddHabitPage />} />
+            <Route path="/estatisticas" element={<StatsPage />} />
           </Routes>
         </main>
 

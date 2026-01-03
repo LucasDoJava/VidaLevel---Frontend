@@ -31,7 +31,7 @@ export default function Navbar() {
   // 🔹 Navegação ajustada
   const navigation = [
     { name: 'Meus Hábitos', href: '/', icon: Target },
-    { name: 'Estatísticas', href: '/stats', icon: Trophy },
+    { name: 'Estatísticas', href: '/estatisticas', icon: Trophy },
   ]
 
   const userMenu = [
