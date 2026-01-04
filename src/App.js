@@ -1,53 +1,78 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import Navbar from './components/Navbar.js'
+
+import Navbar from './components/Navbar'
 import MyHabits from './pages/TelaPrincipal'
-import AddHabitPage from './pages/AddHabitos.js'
-import StatsPage from './pages/Estatisticas.js'
+import AddHabitPage from './pages/AddHabitos'
+import StatsPage from './pages/Estatisticas'
+import Login from './pages/TelaLogin'
+
+import { AuthProvider } from './contexts/AuthContext'
+import PrivateRoute from './routes/PrivateRoute'
+import { useAuth } from './contexts/AuthContext'
+
+function Layout({ children }) {
+  const { isAuthenticated } = useAuth()
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {isAuthenticated && <Navbar />}
+      <main>{children}</main>
+    </div>
+  )
+}
 
 export default function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <Navbar />
-
-        <main>
+    <AuthProvider>
+      <Router>
+        <Layout>
           <Routes>
-            <Route path="/" element={<MyHabits />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-            <Route path="/add-habit" element={<AddHabitPage />} />
-            <Route path="/estatisticas" element={<StatsPage />} />
+
+            {/* 🔓 ROTA PÚBLICA */}
+            <Route path="/login" element={<Login />} />
+
+            {/* 🔒 ROTAS PROTEGIDAS */}
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <MyHabits />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/add-habit"
+              element={
+                <PrivateRoute>
+                  <AddHabitPage />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/estatisticas"
+              element={
+                <PrivateRoute>
+                  <StatsPage />
+                </PrivateRoute>
+              }
+            />
+
+            {/* 🔁 QUALQUER OUTRA ROTA */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+
           </Routes>
-        </main>
+        </Layout>
 
         <Toaster
           position="top-right"
           toastOptions={{
             duration: 3000,
-            style: {
-              background: '#fff',
-              color: '#333',
-              boxShadow:
-                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-              border: '1px solid #e5e7eb',
-              borderRadius: '12px',
-              padding: '16px',
-            },
-            success: {
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
-              },
-            },
           }}
         />
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   )
 }
