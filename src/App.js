@@ -6,6 +6,7 @@ import MyHabits from './pages/TelaPrincipal'
 import AddHabitPage from './pages/AddHabitos'
 import StatsPage from './pages/Estatisticas'
 import Login from './pages/TelaLogin'
+import Ranking from "./pages/Ranking"
 
 import { AuthProvider } from './contexts/AuthContext'
 import PrivateRoute from './routes/PrivateRoute'
@@ -58,6 +59,14 @@ export default function App() {
                   <StatsPage />
                 </PrivateRoute>
               }
+            />
+
+            <Route path="/ranking" 
+            element={
+            <PrivateRoute>
+              <Ranking />
+            </PrivateRoute>
+            } 
             />
 
             {/* 🔁 QUALQUER OUTRA ROTA */}

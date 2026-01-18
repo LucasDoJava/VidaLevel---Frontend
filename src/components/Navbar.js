@@ -9,7 +9,8 @@ import {
   Target,
   Bell,
   ChevronDown,
-  Settings
+  Settings,
+  BarChart
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -31,7 +32,8 @@ export default function Navbar() {
   // 🔹 Navegação ajustada
   const navigation = [
     { name: 'Meus Hábitos', href: '/', icon: Target },
-    { name: 'Estatísticas', href: '/estatisticas', icon: Trophy },
+    { name: 'Estatísticas', href: '/estatisticas', icon: BarChart },
+    { name: 'Ranking', href: '/ranking', icon: Trophy },
   ]
 
   const userMenu = [
