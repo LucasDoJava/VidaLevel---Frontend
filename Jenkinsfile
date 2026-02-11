@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Limpar workspace') {
+        stage('Clean workspace') {
             steps {
                 deleteDir()
             }
@@ -10,20 +10,20 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main',
+                git branch: 'jenkins',
                     url: 'https://github.com/LucasDoJava/VidaLevel---Frontend.git'
             }
         }
 
         stage('Build Docker') {
             steps {
-                sh 'docker compose build'
+                sh 'docker-compose build'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker compose up -d'
+                sh 'docker-compose up -d'
             }
         }
     }
