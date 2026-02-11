@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "react-frontend"
-    }
-
     stages {
 
         stage('Checkout') {
@@ -13,30 +9,18 @@ pipeline {
             }
         }
 
-        stage('Build Frontend Image') {
+        stage('Build imagens') {
             steps {
-                script {
-                    sh '''
-                    cd frontend
-                    docker build -t $IMAGE_NAME .
-                    '''
-                }
+                sh 'docker compose build'
             }
         }
 
-        stage('Run Frontend Container') {
+        stage('Deploy') {
             steps {
-                script {
-                    sh '''
-                    docker stop react_frontend || true
-                    docker rm react_frontend || true
-
-                    docker run -d \
-                      --name react_frontend \
-                      -p 3000:80 \
-                      $IMAGE_NAME
-                    '''
-                }
+                sh '''
+                docker compose down
+                docker compose up -d
+                '''
             }
         }
     }
