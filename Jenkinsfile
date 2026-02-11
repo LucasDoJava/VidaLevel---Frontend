@@ -2,23 +2,28 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Limpar workspace') {
             steps {
-                cleanWs()
-                checkout scm
+                deleteDir()
             }
         }
 
-        stage('Build imagens') {
+        stage('Checkout') {
             steps {
-                sh 'docker-compose build'
+                git branch: 'main',
+                    url: 'https://github.com/LucasDoJava/VidaLevel---Frontend.git'
+            }
+        }
+
+        stage('Build Docker') {
+            steps {
+                sh 'docker compose build'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker-compose down'
-                sh 'docker-compose up -d'
+                sh 'docker compose up -d'
             }
         }
     }
