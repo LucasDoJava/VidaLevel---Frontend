@@ -49,7 +49,7 @@ export default function Estatisticas() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Estatísticas e Progresso
+          Estatísticas
         </h1>
         <p className="text-gray-600">
           Acompanhe sua evolução ao longo do tempo
