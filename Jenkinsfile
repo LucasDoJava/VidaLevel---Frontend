@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     stages {
-
         stage('Checkout') {
             steps {
+                cleanWs()
                 checkout scm
             }
         }
@@ -17,10 +17,8 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh '''
-                docker-compose down
-                docker-compose up -d
-                '''
+                sh 'docker-compose down'
+                sh 'docker-compose up -d'
             }
         }
     }
