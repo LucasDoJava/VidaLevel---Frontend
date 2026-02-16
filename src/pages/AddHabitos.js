@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Save } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -27,15 +27,13 @@ const HABIT_ICONS = [
   "💡","🎵","📝","💬","📆","⚡","🌿","🏋️","🛏️","💻"
 ];
 
-
-
-// --- REMOVA a constante HABIT_COLORS daqui se ainda existir ---
-// const HABIT_COLORS = [...]
-
 export default function AddHabitPage() {
   const navigate = useNavigate()
   const { createHabit } = useHabits()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // ✅ ref do form para conseguir submeter pelo botão que fica fora do form
+  const formRef = useRef(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -70,7 +68,14 @@ export default function AddHabitPage() {
     if (!validateForm()) return
 
     setIsSubmitting(true)
-    const success = await createHabit(formData)
+
+    // ✅ backend exige "points", então calculamos a partir da dificuldade
+    const payload = {
+      ...formData,
+      points: DIFFICULTY_SETTINGS[formData.difficulty].points
+    }
+
+    const success = await createHabit(payload)
     setIsSubmitting(false)
 
     if (success) navigate('/habits')
@@ -103,7 +108,7 @@ export default function AddHabitPage() {
 
         {/* FORM */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
 
             {/* Informações Básicas */}
             <div className="card p-6">
@@ -194,7 +199,7 @@ export default function AddHabitPage() {
               </div>
             </div>
 
-            {/* Ícones (mantivemos essa parte) */}
+            {/* Ícones */}
             <div className="card p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Ícone</h2>
 
@@ -218,7 +223,7 @@ export default function AddHabitPage() {
           </form>
         </div>
 
-        {/* PRÉ-VISUALIZAÇÃO + BOTÕES (AGORA AQUI) */}
+        {/* PRÉ-VISUALIZAÇÃO + BOTÕES */}
         <div>
           <div className="card p-6 sticky top-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Pré-visualização</h2>
@@ -271,7 +276,7 @@ export default function AddHabitPage() {
               </p>
             </div>
 
-            {/* BOTÕES AGORA FICAM AQUI */}
+            {/* BOTÕES */}
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 onClick={() => navigate(-1)}
@@ -280,23 +285,25 @@ export default function AddHabitPage() {
                 Cancelar
               </button>
 
-            <button
-  onClick={handleSubmit}
-  disabled={isSubmitting}
-  className="btn-primary px-4 py-2 text-sm flex items-center space-x-2"
->
-  {isSubmitting ? (
-    <>
-      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-      <span>Criando...</span>
-    </>
-  ) : (
-    <>
-      <Save className="w-4 h-4" />
-      <span>Criar Hábito</span>
-    </>
-  )}
-</button>
+              {/* ✅ botão fica aqui, mas submete o FORM via requestSubmit */}
+              <button
+                type="button"
+                onClick={() => formRef.current?.requestSubmit()}
+                disabled={isSubmitting}
+                className="btn-primary px-4 py-2 text-sm flex items-center space-x-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Criando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Criar Hábito</span>
+                  </>
+                )}
+              </button>
             </div>
 
           </div>
@@ -306,4 +313,3 @@ export default function AddHabitPage() {
     </div>
   )
 }
-

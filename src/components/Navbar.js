@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Menu,
   X,
@@ -10,54 +11,52 @@ import {
   Bell,
   ChevronDown,
   Settings,
-  BarChart
-} from 'lucide-react'
+  BarChart,
+} from "lucide-react";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [hasNotifications, setHasNotifications] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hasNotifications, setHasNotifications] = useState(false);
 
-  const user = {
-    name: "Usuário Demo",
-    email: "demo@example.com"
-  }
-
-  const logout = () => {
-    console.log("Logout removido temporariamente")
-  }
-
-  const location = useLocation()
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // 🔹 Navegação ajustada
   const navigation = [
-    { name: 'Meus Hábitos', href: '/', icon: Target },
-    { name: 'Estatísticas', href: '/estatisticas', icon: BarChart },
-    { name: 'Ranking', href: '/ranking', icon: Trophy },
-  ]
+    { name: "Meus Hábitos", href: "/", icon: Target },
+    { name: "Estatísticas", href: "/estatisticas", icon: BarChart },
+    { name: "Ranking", href: "/ranking", icon: Trophy },
+  ];
 
   const userMenu = [
-    { name: 'Meu Perfil', href: '/profile', icon: User },
-    { name: 'Configurações', href: '/settings', icon: Settings },
-  ]
+    { name: "Meu Perfil", href: "/profile", icon: User },
+    { name: "Configurações", href: "/settings", icon: Settings },
+  ];
 
-  const isActiveRoute = (href) => location.pathname === href
+  const isActiveRoute = (href) => location.pathname === href;
+
+  const handleLogout = () => {
+    logout();               // ✅ limpa auth_token + auth_user (no AuthContext)
+    setIsDropdownOpen(false);
+    navigate("/login");     // ✅ volta pro login
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!(event.target.closest('.user-dropdown'))) {
-        setIsDropdownOpen(false)
+      if (!event.target.closest(".user-dropdown")) {
+        setIsDropdownOpen(false);
       }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3 group">
@@ -78,8 +77,8 @@ export default function Navbar() {
           {/* Navegação desktop */}
           <div className="hidden md:flex items-center space-x-2">
             {navigation.map((item) => {
-              const Icon = item.icon
-              const isActive = isActiveRoute(item.href)
+              const Icon = item.icon;
+              const isActive = isActiveRoute(item.href);
 
               return (
                 <Link
@@ -87,26 +86,25 @@ export default function Navbar() {
                   to={item.href}
                   className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all duration-300 relative overflow-hidden group ${
                     isActive
-                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 font-semibold'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+                      ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 font-semibold"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
                   }`}
                 >
                   {isActive && (
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
                   )}
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : ''}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? "text-blue-600" : ""}`} />
                   <span className="relative">{item.name}</span>
                   {isActive && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600" />
                   )}
                 </Link>
-              )
+              );
             })}
           </div>
 
           {/* Usuário */}
           <div className="hidden md:flex items-center space-x-4">
-
             {/* Notificações */}
             <button
               onClick={() => setHasNotifications(!hasNotifications)}
@@ -129,15 +127,17 @@ export default function Navbar() {
                 </div>
 
                 <div className="text-left hidden lg:block">
-                  <div className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
-                    {user.name}
+                  <div className="text-sm font-medium text-gray-900 truncate max-w-[160px]">
+                    {user?.name || "Carregando..."}
                   </div>
-                  <div className="text-xs text-gray-500">Online</div>
+                  <div className="text-xs text-gray-500">
+                    {user?.email ? "Online" : ""}
+                  </div>
                 </div>
 
                 <ChevronDown
                   className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${
-                    isDropdownOpen ? 'rotate-180' : ''
+                    isDropdownOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
@@ -145,8 +145,12 @@ export default function Navbar() {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <div className="text-sm font-semibold text-gray-900">{user.name}</div>
-                    <div className="text-xs text-gray-500 mt-1">{user.email}</div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      {user?.name || "-"}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {user?.email || "-"}
+                    </div>
                   </div>
 
                   <div className="py-2">
@@ -154,6 +158,7 @@ export default function Navbar() {
                       <Link
                         key={item.name}
                         to={item.href}
+                        onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                       >
                         <item.icon className="w-4 h-4" />
@@ -164,7 +169,7 @@ export default function Navbar() {
 
                   <div className="border-t border-gray-100 pt-2">
                     <button
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="flex items-center space-x-3 w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors duration-200 rounded-lg mx-2"
                     >
                       <LogOut className="w-4 h-4" />
@@ -185,9 +190,8 @@ export default function Navbar() {
               {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-
         </div>
       </div>
     </nav>
-  )
+  );
 }
