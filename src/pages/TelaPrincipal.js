@@ -1,25 +1,24 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus, Target, Search } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Plus, Target, Search, Pencil, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import HabitCard from '../components/CardHabits'
-import { useHabits } from '../hooks/useHabits'  
+import { useHabits } from '../hooks/useHabits'
 
 export default function MyHabits() {
+  const navigate = useNavigate()
+  const { habits, completeHabit, deleteHabit, isLoading: habitsLoading } = useHabits()
 
-  const { habits, completeHabit, isLoading: habitsLoading } = useHabits()
-
-  // Estados de filtro
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
   const [completed, setCompleted] = useState('all')
 
-  // Categorias únicas
+  const [habitToDelete, setHabitToDelete] = useState(null)
+
   const categories = ['all', ...new Set(
     habits.map(h => h.category).filter(Boolean)
   )]
 
-  // Filtro principal
   const filteredHabits = habits.filter(habit => {
     const matchesSearch =
       habit.name?.toLowerCase().includes(search.toLowerCase())
@@ -61,7 +60,6 @@ export default function MyHabits() {
       {/* Filtros */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 
-        {/* Busca */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -73,7 +71,6 @@ export default function MyHabits() {
           />
         </div>
 
-        {/* Categoria */}
         <select
           value={category}
           onChange={e => setCategory(e.target.value)}
@@ -86,7 +83,6 @@ export default function MyHabits() {
           ))}
         </select>
 
-        {/* Completados */}
         <select
           value={completed}
           onChange={e => setCompleted(e.target.value)}
@@ -113,12 +109,31 @@ export default function MyHabits() {
       {filteredHabits.length > 0 ? (
         <motion.div className="space-y-4">
           {filteredHabits.map(habit => (
-            <HabitCard
-              key={habit.id}
-              habit={habit}
-              onComplete={() => completeHabit(habit.id)}
-              showActions
-            />
+            <div key={habit.id} className="relative">
+
+              <HabitCard
+                habit={habit}
+                onComplete={() => completeHabit(habit.id)}
+              />
+
+              {/* Botões Editar / Deletar */}
+              <div className="absolute top-4 right-4 flex gap-2">
+                <button
+                  onClick={() => navigate('/add-habit', { state: { habit } })}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                >
+                  <Pencil className="w-4 h-4 text-gray-600" />
+                </button>
+
+                <button
+                  onClick={() => setHabitToDelete(habit)}
+                  className="p-2 bg-red-100 hover:bg-red-200 rounded-lg"
+                >
+                  <Trash2 className="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+
+            </div>
           ))}
         </motion.div>
       ) : (
@@ -127,6 +142,36 @@ export default function MyHabits() {
           <p className="text-gray-600">
             Nenhum hábito encontrado
           </p>
+        </div>
+      )}
+
+      {/* Modal de confirmação */}
+      {habitToDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-80 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">
+              Deseja excluir esse "{habitToDelete.name}"?
+            </h2>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setHabitToDelete(null)}
+                className="px-4 py-2 rounded-lg border"
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={() => {
+                  deleteHabit(habitToDelete.id)
+                  setHabitToDelete(null)
+                }}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

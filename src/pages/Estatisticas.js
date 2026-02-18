@@ -55,7 +55,7 @@ export default function Estatisticas() {
     }
 
     loadActivity();
-  }, []);
+  }, [stats?.total_habits_completed]);
 
   const uiStats = useMemo(() => {
     if (!stats) return null;

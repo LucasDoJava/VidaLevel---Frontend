@@ -7,7 +7,7 @@ function isLikelyJwt(token) {
 }
 
 function getToken() {
-  const token = localStorage.getItem("token"); // ✅ CORRETO
+  const token = localStorage.getItem("token"); 
 
   if (!isLikelyJwt(token)) {
     if (token) localStorage.removeItem("auth_token");
@@ -29,7 +29,7 @@ export async function apiFetch(path, options = {}) {
   }
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`; // ✅ Agora vai corretamente
+    headers["Authorization"] = `Bearer ${token}`; 
   }
 
   const res = await fetch(`${API_URL}${path}`, {
