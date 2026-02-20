@@ -13,13 +13,19 @@ export default function HabitCard({
   const [notes, setNotes] = useState('')
   const [showNotes, setShowNotes] = useState(false)
 
+  // ✅ Normaliza campos (camelCase e snake_case)
+  const isActive = habit.isActive ?? habit.is_active ?? true
+  const streak = habit.streak ?? habit.currentStreak ?? habit.current_streak ?? 0
+  const bestStreak = habit.bestStreak ?? habit.best_streak ?? 0
+  const totalCompletions = habit.totalCompletions ?? habit.total_completions ?? 0
+
   const progressPercentage =
-    habit.bestStreak > 0 ? (habit.streak / habit.bestStreak) * 100 : 0
+    bestStreak > 0 ? (streak / bestStreak) * 100 : 0
 
   const handleComplete = async () => {
     if (isCompleting) return
-
     setIsCompleting(true)
+
     try {
       const success = await onComplete(habit.id, notes.trim() || undefined)
       if (success) {
@@ -63,6 +69,7 @@ export default function HabitCard({
           <div className="flex items-center space-x-1">
             {onEdit && (
               <button
+                type="button"
                 onClick={() => onEdit(habit)}
                 className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
                 title="Editar hábito"
@@ -73,6 +80,7 @@ export default function HabitCard({
 
             {onDelete && (
               <button
+                type="button"
                 onClick={() => onDelete(habit.id)}
                 className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                 title="Excluir hábito"
@@ -87,94 +95,69 @@ export default function HabitCard({
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center">
-          <div className="flex items-center justify-center space-x-1 mb-1">
+          <div className="flex items-center justify-center mb-1">
             <Flame className="w-4 h-4 text-orange-500" />
-            <span className="text-2xl font-bold text-gray-900">
-              {habit.streak}
-            </span>
           </div>
-          <p className="text-xs text-gray-600">Sequência</p>
+          <div className="text-lg font-bold text-gray-900">{streak}</div>
+          <div className="text-xs text-gray-500">Sequência</div>
         </div>
 
         <div className="text-center">
-          <div className="flex items-center justify-center space-x-1 mb-1">
+          <div className="flex items-center justify-center mb-1">
             <Trophy className="w-4 h-4 text-yellow-500" />
-            <span className="text-2xl font-bold text-gray-900">
-              {habit.bestStreak}
-            </span>
           </div>
-          <p className="text-xs text-gray-600">Recorde</p>
+          <div className="text-lg font-bold text-gray-900">{bestStreak}</div>
+          <div className="text-xs text-gray-500">Recorde</div>
         </div>
 
         <div className="text-center">
-          <div className="flex items-center justify-center space-x-1 mb-1">
+          <div className="flex items-center justify-center mb-1">
             <Target className="w-4 h-4 text-blue-500" />
-            <span className="text-2xl font-bold text-gray-900">
-              {habit.totalCompletions}
-            </span>
           </div>
-          <p className="text-xs text-gray-600">Total</p>
+          <div className="text-lg font-bold text-gray-900">{totalCompletions}</div>
+          <div className="text-xs text-gray-500">Total</div>
         </div>
       </div>
 
-      {/* Progress Bar */}
-      {habit.bestStreak > 0 && (
+      {/* Progress bar */}
+      {bestStreak > 0 && (
         <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
-            <span>Progresso da sequência</span>
-            <span>{Math.round(progressPercentage)}%</span>
-          </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="progress-bar"
-              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+              className="h-2 rounded-full transition-all duration-300"
+              style={{
+                width: `${Math.min(progressPercentage, 100)}%`,
+                background: `linear-gradient(90deg, ${habit.color}, #7c3aed)`
+              }}
             />
           </div>
         </div>
       )}
 
-      {/* Notes Input */}
+      {/* Notes */}
       {showNotes && (
-        <form onSubmit={handleNotesSubmit} className="mb-4">
+        <motion.form
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          onSubmit={handleNotesSubmit}
+          className="mb-3"
+        >
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Adicione uma anotação (opcional)..."
-            className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-            rows={3}
-            maxLength={200}
+            placeholder="Adicione uma nota sobre hoje..."
+            className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            rows={2}
           />
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-gray-500">
-              {notes.length}/200 caracteres
-            </span>
-            <div className="flex space-x-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowNotes(false)
-                  setNotes('')
-                }}
-                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isCompleting}
-                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-              >
-                {isCompleting ? 'Salvando...' : 'Salvar'}
-              </button>
-            </div>
-          </div>
-        </form>
+        </motion.form>
       )}
 
-      {/* Complete Button */}
-      {!showNotes && (
+      {/* Actions */}
+      {showActions && (
         <div className="flex space-x-2">
           <button
+            type="button"
             onClick={() => setShowNotes(true)}
             className="flex-1 btn-secondary text-sm py-2"
           >
@@ -182,9 +165,11 @@ export default function HabitCard({
           </button>
 
           <button
+            type="button"
             onClick={handleComplete}
-            disabled={isCompleting || !habit.isActive}
-            className="flex-1 btn-primary text-sm py-2 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isCompleting || isActive === false}
+            className="flex-1 btn-primary text-sm py-2 flex items-center gap-2 !justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            title={isActive === false ? 'Hábito pausado' : 'Completar hábito'}
           >
             <CheckCircle className="w-4 h-4" />
             <span>{isCompleting ? 'Completando...' : 'Completar'}</span>
@@ -192,8 +177,8 @@ export default function HabitCard({
         </div>
       )}
 
-      {/* Status Indicator */}
-      {!habit.isActive && (
+      {/* Status */}
+      {isActive === false && (
         <div className="mt-2 text-center">
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
             Hábito pausado
