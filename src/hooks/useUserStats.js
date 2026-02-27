@@ -1,157 +1,74 @@
-import { useEffect, useState } from 'react'
-import { toast } from 'react-hot-toast'
+import { useEffect, useState, useCallback } from "react";
+import { getMyStats } from "../services/stats";
+import { useAuth } from "../contexts/AuthContext";
 
-// ============================
-// Conquistas mockadas
-// ============================
-const ACHIEVEMENTS = [
-  {
-    id: 'first_habit',
-    name: 'Primeiro Passo',
-    description: 'Complete seu primeiro hábito',
-    icon: '🎯',
-    condition: (stats) => stats.totalHabitsCompleted >= 1
-  },
-  {
-    id: 'streak_7',
-    name: 'Semana Forte',
-    description: 'Mantenha uma sequência de 7 dias',
-    icon: '🔥',
-    condition: (stats) => stats.longestStreak >= 7
-  },
-  {
-    id: 'level_5',
-    name: 'Evoluindo',
-    description: 'Alcance o nível 5',
-    icon: '⭐',
-    condition: (stats) => stats.level >= 5
-  },
-  {
-    id: 'points_1000',
-    name: 'Milionário',
-    description: 'Acumule 1000 pontos',
-    icon: '💎',
-    condition: (stats) => stats.totalPoints >= 1000
-  },
-  {
-    id: 'habits_50',
-    name: 'Persistente',
-    description: 'Complete 50 hábitos',
-    icon: '🏆',
-    condition: (stats) => stats.totalHabitsCompleted >= 50
-  },
-  {
-    id: 'streak_30',
-    name: 'Dedicado',
-    description: 'Mantenha uma sequência de 30 dias',
-    icon: '👑',
-    condition: (stats) => stats.longestStreak >= 30
-  }
-]
-
-// ============================
-// Hook
-// ============================
 export function useUserStats() {
-  const [stats, setStats] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { user } = useAuth();
 
-  // ============================
-  // Mock de carregamento
-  // ============================
-  const fetchStats = () => {
-    setIsLoading(true)
-    setError(null)
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+//atualizar estatisticas
+  const refreshStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    // Simula delay de API
-    setTimeout(() => {
-      setStats({
-        level: 3,
-        currentExp: 60,
-        expToNextLevel: 40,
-        totalPoints: 420,
-        longestStreak: 12,
-        totalHabitsCompleted: 58,
-        achievements: ['first_habit', 'streak_7']
-      })
-      setIsLoading(false)
-    }, 500)
-  }
+      if (!user) {
+        setStats(null);
+        return;
+      }
 
-  // ============================
-  // Conquistas
-  // ============================
-  const checkAchievements = (currentStats) => {
-    if (!currentStats) return
-
-    const unlocked = ACHIEVEMENTS.filter(a =>
-      a.condition(currentStats) &&
-      !currentStats.achievements.includes(a.id)
-    )
-
-    unlocked.forEach(a => {
-      toast?.success?.(`🏆 Conquista desbloqueada: ${a.name}!`)
-    })
-
-    if (unlocked.length > 0) {
-      setStats(prev => ({
-        ...prev,
-        achievements: [
-          ...prev.achievements,
-          ...unlocked.map(a => a.id)
-        ]
-      }))
+      const data = await getMyStats(); //chama o serviço de minhas estatisticas
+      setStats(data);
+    } catch (err) {
+      console.error("Erro ao buscar stats:", err);
+      setError("Erro ao carregar estatísticas");
+      setStats(null);
+    } finally {
+      setLoading(false);
     }
-  }
+  }, [user]);
 
-  const getAchievements = () => {
-    if (!stats) return []
-
-    return ACHIEVEMENTS.map(a => ({
-      ...a,
-      unlocked: stats.achievements.includes(a.id)
-    }))
-  }
-
-  // ============================
-  // Progressão
-  // ============================
-  const getExpProgress = () => {
-    if (!stats) return 0
-    return (stats.currentExp / (stats.currentExp + stats.expToNextLevel)) * 100
-  }
-
-  const getLevelName = (level) => {
-    if (level >= 50) return 'Lenda'
-    if (level >= 40) return 'Mestre'
-    if (level >= 30) return 'Especialista'
-    if (level >= 20) return 'Avançado'
-    if (level >= 10) return 'Intermediário'
-    if (level >= 5) return 'Iniciante'
-    return 'Novato'
-  }
-
-  const refreshStats = () => {
-    fetchStats()
-  }
-
-  // ============================
-  // Init
-  // ============================
   useEffect(() => {
-    fetchStats()
-  }, [])
+    let alive = true;
 
-  return {
-    stats,
-    isLoading,
-    error,
-    fetchStats,
-    refreshStats,
-    checkAchievements,
-    getAchievements,
-    getExpProgress,
-    getLevelName
-  }
+    async function run() {
+      if (!alive) return;
+      await refreshStats();
+    }
+
+    run();
+
+    //funçao para escutar o evento disparado pelo completeHabit
+    function onRefresh() {
+      if (!alive) return;
+      refreshStats(); //chamando a funcao que busca as estatisticas atualizadas
+    }
+
+    window.addEventListener("stats:refresh", onRefresh); //ouve o evento
+
+    return () => {
+      alive = false;
+      window.removeEventListener("stats:refresh", onRefresh); //remove
+    };
+  }, [refreshStats]);
+
+  const getAchievements = useCallback(() => { //consquistas
+    if (!stats) return [];
+
+    const ach = stats.achievements || {};
+
+    return [
+      { id: "first_completion", icon: "✅", name: "Primeira Conclusão", description: "Concluiu um hábito pela primeira vez", unlocked: !!ach.first_completion },
+      { id: "ten_completions", icon: "🔟", name: "10 Conclusões", description: "Concluiu 10 hábitos no total", unlocked: !!ach.ten_completions },
+      { id: "twenty_completions", icon: "🏅", name: "20 Conclusões", description: "Concluiu 20 hábitos no total", unlocked: !!ach.twenty_completions },
+      { id: "points_100", icon: "💯", name: "100 Pontos", description: "Acumulou 100 pontos", unlocked: !!ach.points_100 },
+      { id: "points_500", icon: "💎", name: "500 Pontos", description: "Acumulou 500 pontos", unlocked: !!ach.points_500 },
+      { id: "streak_7", icon: "🔥", name: "Sequência de 7 dias", description: "Concluiu hábitos por 7 dias seguidos", unlocked: !!ach.streak_7 },
+      { id: "streak_30", icon: "🚀", name: "Sequência de 30 dias", description: "Concluiu hábitos por 30 dias seguidos", unlocked: !!ach.streak_30 },
+    ];
+  }, [stats]);
+
+  return { stats, loading, isLoading: loading, error, refreshStats, getAchievements };
 }

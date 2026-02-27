@@ -11,7 +11,7 @@ export default function PrivateRoute({ children }) {
       </div>
     )
   }
-
+  //proteger as rotas
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }

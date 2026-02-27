@@ -1,106 +1,159 @@
-import { useState, useEffect } from 'react'
-import { toast } from 'react-hot-toast'
-
-// Pontos baseados na dificuldade
-const DIFFICULTY_SETTINGS = {
-  facil: 10,
-  medio: 15,
-  dificil: 20
-}
+import { useState, useEffect, useCallback } from "react";
+import { toast } from "react-hot-toast";
+import { apiFetch } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 export function useHabits() {
-  const [habits, setHabits] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { user } = useAuth();
 
-  // Carrega hábitos iniciais (mock)
-  const fetchHabits = async () => {
+  const [habits, setHabits] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  //o usuario precisa estar logado
+  const requireUser = useCallback(() => {
+    if (!user) {
+      toast.error("Faça login para continuar.");
+      return false;
+    }
+    return true;
+  }, [user]);
+
+  const fetchHabits = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      if (!user) {
+        setHabits([]);
+        setIsLoading(false);
+        return;
+      }
 
-      await new Promise(res => setTimeout(res, 500))
+      setIsLoading(true);
+      setError(null);
 
-      const mock = [
-        { id: 1, name: "Beber água", category: "saude", description: "Tomar água durante o dia", icon: "💧", difficulty: "facil", points: 10, streak: 0, isActive: true, color: "#3B82F6" },
-        { id: 2, name: "Ler 10 min", category: "estudo", description: "Leitura diária", icon: "📚", difficulty: "medio", points: 15, streak: 1, isActive: true, color: "#10B981" }
-      ]
-
-      setHabits(mock)
+      const data = await apiFetch("/habits"); //carregar habitos
+      setHabits(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err)
-      setError("Erro ao carregar hábitos")
+      console.error(err);
+      setError("Erro ao carregar hábitos");
+      toast.error(err.message || "Erro ao carregar hábitos"); //erro com toast
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  }, [user]);
 
-  // Criar hábito
-  const createHabit = async (habitData) => {
-    const newHabit = {
-      id: Date.now(),
-      streak: 0,
-      isActive: true,
-      points: DIFFICULTY_SETTINGS[habitData.difficulty], 
-      ...habitData
-    }
+  const createHabit = useCallback( //criar habito
+    async (habitData) => {
+      try {
+        if (!requireUser()) return false;
 
-    setHabits(prev => [newHabit, ...prev])
-    toast.success("Hábito criado! 🎉")
-    return true
-  }
+        const payload = {
+          name: habitData.name,
+          description: habitData.description || "",
+          category: habitData.category,
+          difficulty: habitData.difficulty,
+          points: Number(habitData.points),
+          icon: habitData.icon || "",
+          color: habitData.color || "",
+        };
 
-  // Atualizar
-  const updateHabit = async (id, updates) => {
-    setHabits(prev =>
-      prev.map(h =>
-        h.id === id ? { ...h, ...updates } : h
-      )
-    )
+        const createdHabit = await apiFetch("/habits", { //post
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
 
-    toast.success("Hábito atualizado!")
-    return true
-  }
+        setHabits((prev) => [createdHabit, ...prev]);
+        toast.success("Hábito criado! 🎉"); //sucesso com toast
+        return true;
+      } catch (err) {
+        console.error(err);
+        toast.error(err.message || "Erro ao criar hábito"); //erro com toast
+        return false;
+      }
+    },
+    [requireUser]
+  );
 
-  // Excluir
-  const deleteHabit = async (id) => {
-    setHabits(prev => prev.filter(h => h.id !== id))
-    toast.success("Hábito removido!")
-    return true
-  }
+  const updateHabit = useCallback( //atualizar habito
+    async (id, updates) => {
+      try {
+        if (!requireUser()) return false;
 
-  // Completar
-  const completeHabit = async (id) => {
-    setHabits(prev =>
-      prev.map(h =>
-        h.id === id ? { ...h, streak: h.streak + 1 } : h
-      )
-    )
+        await apiFetch(`/habits/${id}`, { //put
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
 
-    toast.success("+10 pontos! 🎉")
-    return true
-  }
+        await fetchHabits();
+        toast.success("Hábito atualizado!"); //sucesso com toast
+        return true;
+      } catch (err) {
+        console.error(err);
+        toast.error(err.message || "Erro ao atualizar hábito"); //erro com toast
+        return false;
+      }
+    },
+    [requireUser, fetchHabits]
+  );
 
-  // Ativar/desativar
-  const toggleHabitStatus = async (id) => {
-    setHabits(prev =>
-      prev.map(h =>
-        h.id === id ? { ...h, isActive: !h.isActive } : h
-      )
-    )
-    return true
-  }
+  const deleteHabit = useCallback( //apagar habito
+    async (id) => {
+      try {
+        if (!requireUser()) return false;
 
-  const getHabitsByCategory = (category) =>
-    category ? habits.filter(h => h.category === category) : habits
+        await apiFetch(`/habits/${id}`, { //delete
+          method: "DELETE",
+        });
 
-  const getActiveHabits = () => habits.filter(h => h.isActive)
+        setHabits((prev) => prev.filter((h) => h.id !== id));
+        toast.success("Hábito removido!"); //sucesso com toast
+        return true;
+      } catch (err) {
+        console.error(err);
+        toast.error(err.message || "Erro ao remover hábito"); //erro com toast
+        return false;
+      }
+    },
+    [requireUser]
+  );
 
-  const getHabitsCompletedToday = () => habits.filter(h => h.streak > 0)
+  //completar habito
+  const completeHabit = useCallback(
+    async (habitId, notes) => {
+      try {
+        if (!requireUser()) return false;
+
+        if (!habitId) {
+          toast.error("Hábito inválido."); //erro com toast
+          return false;
+        }
+
+        await apiFetch("/completions", { //post
+          method: "POST",
+          body: JSON.stringify({
+            habit_id: Number(habitId),
+            notes: notes || "",
+          }),
+        });
+
+        //atualiza hábitos (sequencia, recorde, total)
+        await fetchHabits();
+
+        // atualiza estatísticas
+        window.dispatchEvent(new Event("stats:refresh"));
+
+        toast.success("Hábito completado! 🎉"); //sucesso com toast
+        return true;
+      } catch (err) {
+        console.error(err);
+        toast.error(err.message || "Erro ao completar hábito"); //erro com toast
+        return false;
+      }
+    },
+    [requireUser, fetchHabits]
+  );
 
   useEffect(() => {
-    fetchHabits()
-  }, [])
+    fetchHabits();
+  }, [fetchHabits]);
 
   return {
     habits,
@@ -111,9 +164,5 @@ export function useHabits() {
     updateHabit,
     deleteHabit,
     completeHabit,
-    toggleHabitStatus,
-    getHabitsByCategory,
-    getActiveHabits,
-    getHabitsCompletedToday
-  }
+  };
 }

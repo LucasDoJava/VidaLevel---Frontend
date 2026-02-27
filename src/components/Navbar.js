@@ -1,5 +1,11 @@
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
+import AddFriendModal from "../components/AddFriendModal";
+import DropdownPerfil from "../components/DropdownPerfil";
+import DropdownNotificacao from "../components/DropdownNotificacao";
 import {
   Menu,
   X,
@@ -7,187 +13,193 @@ import {
   LogOut,
   Trophy,
   Target,
-  Bell,
   ChevronDown,
   Settings,
-  BarChart
-} from 'lucide-react'
+  BarChart,
+  Users,
+} from "lucide-react";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [hasNotifications, setHasNotifications] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
-  const user = {
-    name: "Usuário Demo",
-    email: "demo@example.com"
-  }
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const token = localStorage.getItem("token");
 
-  const logout = () => {
-    console.log("Logout removido temporariamente")
-  }
+  const navigation = [ //navegaçao
+    { name: "Meus Hábitos", href: "/", icon: Target },
+    { name: "Estatísticas", href: "/estatisticas", icon: BarChart },
+    { name: "Ranking", href: "/ranking", icon: Trophy },
+  ];
 
-  const location = useLocation()
+  const userMenu = [ //menu
+    { name: "Meu Perfil", href: "/profile", icon: User },
+    { name: "Configurações", href: "/settings", icon: Settings },
+  ];
 
-  // 🔹 Navegação ajustada
-  const navigation = [
-    { name: 'Meus Hábitos', href: '/', icon: Target },
-    { name: 'Estatísticas', href: '/estatisticas', icon: BarChart },
-    { name: 'Ranking', href: '/ranking', icon: Trophy },
-  ]
+  const isActiveRoute = (href) => location.pathname === href;
+  //sair da conta
+  const handleLogout = () => {
+    logout();
+    setIsDropdownOpen(false);
+    navigate("/login");
+  };
 
-  const userMenu = [
-    { name: 'Meu Perfil', href: '/profile', icon: User },
-    { name: 'Configurações', href: '/settings', icon: Settings },
-  ]
+  //buscar pedidos pendentes
+  const fetchPendingRequests = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/friend-request/pending",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  const isActiveRoute = (href) => location.pathname === href
+      const data = await response.json();
+      setPendingRequests(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar pedidos:", error);
+    }
+  };
+  //resposta
+  const respondToRequest = async (id, action) => {
+    try {
+      await apiFetch(`/friend-request/${id}/${action}`, {
+        method: "PUT",
+      });
+
+      await fetchPendingRequests();
+
+      toast.success(
+        action === "accept"
+          ? "Pedido aceito com sucesso! 🎉"
+          : "Pedido recusado com sucesso."
+      );
+    } catch (error) {
+      toast.error("Erro ao responder pedido.");
+      console.error("Erro ao responder:", error);
+    }
+  };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!(event.target.closest('.user-dropdown'))) {
-        setIsDropdownOpen(false)
-      }
+    if (token) {
+      fetchPendingRequests();
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [token]);
+//fecha drop ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".user-dropdown")) {
+        setIsDropdownOpen(false);
+      }
+      if (!event.target.closest(".notification-dropdown")) {
+        setIsNotificationOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <>
+      <nav className="bg-white shadow-lg border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            
+            {/*logo*/}
+            <div className="flex items-center">
+              <Link to="/" className="flex items-center space-x-3 group">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shadow-lg">
+                  <span className="text-white font-bold text-xl">VL</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    VidaLevel
+                  </span>
+                  <span className="text-xs text-gray-500 font-medium">
+                    Transformando hábitos
+                  </span>
+                </div>
+              </Link>
+            </div>
 
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shadow-lg">
-                <span className="text-white font-bold text-xl">VL</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  VidaLevel
-                </span>
-                <span className="text-xs text-gray-500 font-medium">
-                  Transformando hábitos
-                </span>
-              </div>
-            </Link>
-          </div>
+            {/*navegação*/}
+            <div className="hidden md:flex items-center space-x-2">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = isActiveRoute(item.href);
 
-          {/* Navegação desktop */}
-          <div className="hidden md:flex items-center space-x-2">
-            {navigation.map((item) => {
-              const Icon = item.icon
-              const isActive = isActiveRoute(item.href)
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all duration-300 relative overflow-hidden group ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 font-semibold"
+                        : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${isActive ? "text-blue-600" : ""}`} />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
 
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all duration-300 relative overflow-hidden group ${
-                    isActive
-                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 font-semibold'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
-                  )}
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : ''}`} />
-                  <span className="relative">{item.name}</span>
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600" />
-                  )}
-                </Link>
-              )
-            })}
-          </div>
-
-          {/* Usuário */}
-          <div className="hidden md:flex items-center space-x-4">
-
-            {/* Notificações */}
-            <button
-              onClick={() => setHasNotifications(!hasNotifications)}
-              className="p-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors duration-300 relative"
-            >
-              <Bell className="w-5 h-5" />
-              {hasNotifications && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
-              )}
-            </button>
-
-            {/* Dropdown */}
-            <div className="relative user-dropdown">
+            {/*usuário + amigos + notificações */}
+            <div className="hidden md:flex items-center space-x-4">
+              
+              {/*botao amigos*/}
               <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-300 group"
+                onClick={() => setIsFriendModalOpen(true)}
+                className="p-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors duration-300"
               >
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-
-                <div className="text-left hidden lg:block">
-                  <div className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
-                    {user.name}
-                  </div>
-                  <div className="text-xs text-gray-500">Online</div>
-                </div>
-
-                <ChevronDown
-                  className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
+                <Users className="w-5 h-5" />
               </button>
 
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <div className="text-sm font-semibold text-gray-900">{user.name}</div>
-                    <div className="text-xs text-gray-500 mt-1">{user.email}</div>
-                  </div>
+              {/*notificaçoes */}
+              <DropdownNotificacao //abre o drop
+                isOpen={isNotificationOpen}
+                setIsOpen={setIsNotificationOpen}
+                pendingRequests={pendingRequests}
+                respondToRequest={respondToRequest}
+              />
 
-                  <div className="py-2">
-                    {userMenu.map((item) => (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.name}</span>
-                      </Link>
-                    ))}
-                  </div>
+              {/*perfil*/}
+              <DropdownPerfil
+                user={user}
+                isOpen={isDropdownOpen}
+                setIsOpen={setIsDropdownOpen}
+                handleLogout={handleLogout}
+                userMenu={userMenu}
+              />
+            </div>
 
-                  <div className="border-t border-gray-100 pt-2">
-                    <button
-                      onClick={logout}
-                      className="flex items-center space-x-3 w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors duration-200 rounded-lg mx-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Sair</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+            {/*versao da navbar mobile*/}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+              >
+                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </div>
-
-          {/* Mobile */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors duration-300"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
         </div>
-      </div>
-    </nav>
-  )
+      </nav>
+
+      {/*modal amigos*/}
+      <AddFriendModal
+        isOpen={isFriendModalOpen}
+        onClose={() => setIsFriendModalOpen(false)}
+      />
+    </>
+  );
 }

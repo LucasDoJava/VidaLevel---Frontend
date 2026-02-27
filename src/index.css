@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
+@layer base { /*configuração basica da estilizaçao*/
   html {
     font-family: 'Inter', system-ui, sans-serif;
   }
@@ -12,7 +12,7 @@
   }
 }
 
-@layer components {
+@layer components {  /*configuraçao de componentes */
   .btn-primary {
     @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
   }
@@ -34,12 +34,12 @@
   }
 }
 
-@layer utilities {
+@layer utilities {  /*utilitarios */
   .text-gradient {
     @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
   }
   
-  .animate-bounce-slow {
+  .animate-bounce-slow {  /*animaçoes */
     animation: bounce 2s infinite;
   }
   
@@ -52,7 +52,7 @@
   }
 }
 
-/* Animações customizadas */
+/*animaçoes customizadas*/
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -83,12 +83,12 @@
   animation: fadeInScale 0.3s ease-out;
 }
 
-/* Estados de loading */
+/*estados de loading*/
 .loading-spinner {
   @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
 }
 
-/* Scrollbar customizada */
+/*scrollbar customizada*/
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -101,7 +101,7 @@
   @apply bg-gray-300 rounded-full hover:bg-gray-400;
 }
 
-/* Responsividade aprimorada */
+/*responsividade*/
 @media (max-width: 640px) {
   .card {
     @apply mx-4 rounded-xl;

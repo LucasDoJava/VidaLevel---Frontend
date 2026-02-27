@@ -30,12 +30,12 @@ export default function App() {
         <Layout>
           <Routes>
 
-            {/* 🔓 ROTA PÚBLICA */}
+            {/*rota publica */}
             <Route path="/login" element={<Login />} />
 
-            {/* 🔒 ROTAS PROTEGIDAS */}
+            {/*rota principal*/}
             <Route
-              path="/"
+              path="/habits"
               element={
                 <PrivateRoute>
                   <MyHabits />
@@ -43,6 +43,10 @@ export default function App() {
               }
             />
 
+            {/*volta para a rota principal*/}
+            <Route path="/" element={<Navigate to="/habits" replace />} />
+
+            {/*rotas protegidas*/}
             <Route
               path="/add-habit"
               element={
@@ -61,16 +65,17 @@ export default function App() {
               }
             />
 
-            <Route path="/ranking" 
-            element={
-            <PrivateRoute>
-              <Ranking />
-            </PrivateRoute>
-            } 
+            <Route
+              path="/ranking"
+              element={
+                <PrivateRoute>
+                  <Ranking />
+                </PrivateRoute>
+              }
             />
 
-            {/* 🔁 QUALQUER OUTRA ROTA */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* qualquer outra rota */}
+            <Route path="*" element={<Navigate to="/habits" replace />} />
 
           </Routes>
         </Layout>
