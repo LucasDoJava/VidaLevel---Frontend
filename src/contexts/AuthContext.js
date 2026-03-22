@@ -4,17 +4,15 @@ import { apiFetch } from "../services/api";
 
 export const AuthContext = createContext(null);
 
-const USER_KEY = "auth_user"; //salvar usuario
-const TOKEN_KEY = "token"; //salvar token
+const USER_KEY = "auth_user";
+const TOKEN_KEY = "token";
 
-// login(email, password)
 function normalizeLoginArgs(a, b) {
   if (typeof a === "string") return { email: a, password: b };
   if (a && typeof a === "object") return { email: a.email, password: a.password };
   return { email: undefined, password: undefined };
 }
 
-// cadastro(name, email, password, confirmPassword)
 function normalizeRegisterArgs(a, b, c, d) {
   if (a && typeof a === "object") {
     return {
@@ -40,7 +38,7 @@ export function AuthProvider({ children }) {
       const storedUser = localStorage.getItem(USER_KEY);
       if (storedUser) setUser(JSON.parse(storedUser));
     } catch {
-      localStorage.removeItem(USER_KEY); //se falhar, remove
+      localStorage.removeItem(USER_KEY);
     } finally {
       setIsLoading(false);
     }
@@ -50,27 +48,33 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     try {
       if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
-      else localStorage.removeItem(USER_KEY); 
+      else localStorage.removeItem(USER_KEY);
     } catch {}
   }, [user]);
-  //login
+
+  // FUNÇÃO PARA ATUALIZAR O USUÁRIO (ADICIONADA)
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+    toast.success("Perfil atualizado com sucesso!");
+  };
+
   const login = async (a, b) => {
     try {
       setIsLoading(true);
 
       const { email, password } = normalizeLoginArgs(a, b);
 
-      if (!email || !password) { //validaçoes com toast
+      if (!email || !password) {
         toast.error("Informe email e senha.");
         return false;
       }
 
-      const data = await apiFetch("/login", { //api
+      const data = await apiFetch("/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
 
-      //backend deve retornar { access_token, user }
       const token = data?.access_token;
       const backendUser = data?.user;
 
@@ -79,22 +83,21 @@ export function AuthProvider({ children }) {
         return false;
       }
 
-      //salva token e usuario
       localStorage.setItem(TOKEN_KEY, token);
       setUser(backendUser);
 
-      toast.success("Login realizado com sucesso!"); //sucesso com toast
+      toast.success("Login realizado com sucesso!");
       return true;
     } catch (err) {
       console.error("Erro no login:", err);
-      toast.error(err?.message || "Credenciais inválidas"); //erro com toast
+      toast.error(err?.message || "Credenciais inválidas");
       return false;
     } finally {
       setIsLoading(false);
     }
   };
-  //cadastro
-  const register = async (a, b, c, d) => { //4 paremetros pois sao 4 campos
+
+  const register = async (a, b, c, d) => {
     try {
       setIsLoading(true);
 
@@ -102,16 +105,15 @@ export function AuthProvider({ children }) {
         normalizeRegisterArgs(a, b, c, d);
 
       if (!name || !email || !password) {
-        toast.error("Preencha nome, email e senha."); //erro com toast
+        toast.error("Preencha nome, email e senha.");
         return false;
       }
 
       if (confirmPassword !== undefined && password !== confirmPassword) {
-        toast.error("As senhas não coincidem."); //erro com toast
+        toast.error("As senhas não coincidem.");
         return false;
       }
 
-      // post 
       await apiFetch("/users", {
         method: "POST",
         body: JSON.stringify({
@@ -122,9 +124,7 @@ export function AuthProvider({ children }) {
         }),
       });
 
-      toast.success("Conta criada! Fazendo login..."); //sucesso com toast
-
-      //login automatico
+      toast.success("Conta criada! Fazendo login...");
       return await login(email, password);
     } catch (err) {
       console.error("Erro no registro:", err);
@@ -136,7 +136,6 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    // sair da conta, romave os itens para individualizar os usuarios
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     setUser(null);
@@ -144,7 +143,15 @@ export function AuthProvider({ children }) {
   };
 
   const value = useMemo(
-    () => ({ user, isLoading, isAuthenticated, login, register, logout }),
+    () => ({ 
+      user, 
+      isLoading, 
+      isAuthenticated, 
+      login, 
+      register, 
+      logout, 
+      updateUser  // <-- ADICIONADA
+    }),
     [user, isLoading, isAuthenticated]
   );
 

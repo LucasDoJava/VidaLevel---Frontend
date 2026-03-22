@@ -37,9 +37,8 @@ export default function Navbar() {
     { name: "Ranking", href: "/ranking", icon: Trophy },
   ];
 
-  const userMenu = [ //menu
-    { name: "Meu Perfil", href: "/profile", icon: User },
-    { name: "Configurações", href: "/settings", icon: Settings },
+  const userMenu = [
+  { name: "Meu Perfil", href: "/perfil", icon: User },
   ];
 
   const isActiveRoute = (href) => location.pathname === href;

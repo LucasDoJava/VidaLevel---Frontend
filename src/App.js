@@ -7,6 +7,10 @@ import AddHabitPage from './pages/AddHabitos'
 import StatsPage from './pages/Estatisticas'
 import Login from './pages/TelaLogin'
 import Ranking from "./pages/Ranking"
+import Friends from './pages/Friends';
+import Configuracoes from './pages/Configuracoes';
+import Perfil from './pages/Perfil';
+
 
 import { AuthProvider } from './contexts/AuthContext'
 import PrivateRoute from './routes/PrivateRoute'
@@ -73,6 +77,12 @@ export default function App() {
                 </PrivateRoute>
               }
             />
+
+             <Route path="/amigos" element={<Friends />} />
+
+             <Route path="/configuracoes" element={<Configuracoes />} />
+
+             <Route path="/perfil" element={<Perfil />} />
 
             {/* qualquer outra rota */}
             <Route path="*" element={<Navigate to="/habits" replace />} />

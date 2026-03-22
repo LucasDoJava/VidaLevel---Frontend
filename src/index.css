@@ -111,3 +111,129 @@
     @apply px-4 py-2 text-sm;
   }
 }
+
+/* index.css - Adicione no final do arquivo */
+
+/* Dark mode global */
+.dark body {
+  @apply bg-gray-900;
+}
+
+/* Cards */
+.dark .card {
+  @apply bg-gray-800 border-gray-700 shadow-xl;
+}
+
+/* Botões */
+.dark .btn-primary {
+  @apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700;
+}
+
+.dark .btn-secondary {
+  @apply bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600;
+}
+
+/* Inputs */
+.dark .input-field {
+  @apply bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-blue-500;
+}
+
+/* Dropdown */
+.dark .user-dropdown button {
+  @apply hover:bg-gray-800;
+}
+
+.dark .user-dropdown .bg-white {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .user-dropdown .text-gray-900 {
+  @apply text-white;
+}
+
+.dark .user-dropdown .text-gray-700 {
+  @apply text-gray-300;
+}
+
+.dark .user-dropdown .border-gray-100 {
+  @apply border-gray-700;
+}
+
+.dark .user-dropdown .hover\:bg-gray-50:hover {
+  @apply hover:bg-gray-700;
+}
+
+/* Navbar */
+.dark nav {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark nav .text-gray-900 {
+  @apply text-white;
+}
+
+.dark nav .text-gray-600 {
+  @apply text-gray-400;
+}
+
+.dark nav .bg-white {
+  @apply bg-gray-800;
+}
+
+.dark nav .border-gray-200 {
+  @apply border-gray-700;
+}
+
+/* Tabelas e listas */
+.dark table {
+  @apply bg-gray-800;
+}
+
+.dark table thead {
+  @apply bg-gray-700;
+}
+
+.dark table tbody tr {
+  @apply border-gray-700 hover:bg-gray-700;
+}
+
+/* Modais */
+.dark .fixed.inset-0 .bg-white {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .fixed.inset-0 .text-gray-900 {
+  @apply text-white;
+}
+
+.dark .fixed.inset-0 .text-gray-600 {
+  @apply text-gray-400;
+}
+
+.dark .fixed.inset-0 .border-gray-200 {
+  @apply border-gray-700;
+}
+
+/* Loading spinner */
+.dark .loading-spinner {
+  @apply border-blue-400;
+}
+
+/* Gradiente de texto */
+.dark .text-gradient {
+  @apply bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent;
+}
+
+/* Links */
+.dark a:not(.btn-primary):not(.btn-secondary) {
+  @apply text-blue-400 hover:text-blue-300;
+}
+
+/* Scrollbar dark mode */
+.dark ::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 hover:bg-gray-500;
+}

@@ -120,7 +120,7 @@ export default function AddHabitPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/*header*/}
       <div className="flex items-center space-x-4 mb-8">
@@ -143,10 +143,10 @@ export default function AddHabitPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
-        {/*form*/}
-        <div className="lg:col-span-2">
+        {/*form - ocupa 3 colunas */}
+        <div className="lg:col-span-3">
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
 
             {/*informaçoes*/}
@@ -254,10 +254,9 @@ export default function AddHabitPage() {
           </form>
         </div>
 
-        {/*preview + botoes */}
-        <div>
+        {/*preview + botoes*/}
+        <div className="lg:col-span-2">
           <div className="card p-6 sticky top-8">
-
             <h2 className="text-lg font-semibold mb-4">Pré-visualização</h2>
 
             <motion.div
@@ -296,7 +295,7 @@ export default function AddHabitPage() {
             </motion.div>
 
             {/*botoes*/}
-            <div className="flex justify-end space-x-4 mt-6">
+            <div className="flex justify-end space-x-9 mt-5">
               <button
                 onClick={() => navigate(-1)}
                 className="btn-secondary"
