@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { useState, useEffect } from 'react'  
 
 import Navbar from './components/Navbar'
 import MyHabits from './pages/TelaPrincipal'
@@ -10,7 +11,6 @@ import Ranking from "./pages/Ranking"
 import Friends from './pages/Friends';
 import Configuracoes from './pages/Configuracoes';
 import Perfil from './pages/Perfil';
-
 
 import { AuthProvider } from './contexts/AuthContext'
 import PrivateRoute from './routes/PrivateRoute'
@@ -33,7 +33,6 @@ export default function App() {
       <Router>
         <Layout>
           <Routes>
-
             {/*rota publica */}
             <Route path="/login" element={<Login />} />
 
@@ -47,7 +46,6 @@ export default function App() {
               }
             />
 
-            {/*volta para a rota principal*/}
             <Route path="/" element={<Navigate to="/habits" replace />} />
 
             {/*rotas protegidas*/}
@@ -78,15 +76,11 @@ export default function App() {
               }
             />
 
-             <Route path="/amigos" element={<Friends />} />
+            <Route path="/amigos" element={<Friends />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/perfil" element={<Perfil />} />
 
-             <Route path="/configuracoes" element={<Configuracoes />} />
-
-             <Route path="/perfil" element={<Perfil />} />
-
-            {/* qualquer outra rota */}
             <Route path="*" element={<Navigate to="/habits" replace />} />
-
           </Routes>
         </Layout>
 
@@ -96,7 +90,8 @@ export default function App() {
             duration: 3000,
           }}
         />
+        
       </Router>
     </AuthProvider>
-  )
+  );
 }

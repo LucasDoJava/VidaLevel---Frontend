@@ -4,6 +4,18 @@ import { motion } from "framer-motion";
 import { useUserStats } from "../hooks/useUserStats";
 import { getMyCompletions } from "../services/completion";
 
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from "recharts";
+
 export default function Estatisticas() {
   const { stats, loading, error, getAchievements } = useUserStats();
   const [dailyActivity, setDailyActivity] = useState([]);
@@ -101,25 +113,74 @@ export default function Estatisticas() {
         </div>
       </div>
 
-      {/*ultimos dias*/}
-      <div className="bg-white p-6 rounded-xl shadow mb-8">
-        <h2 className="flex items-center gap-2 mb-4">
-          <Calendar /> Últimos Dias
-        </h2>
+      {/* Gráficos */}
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-        {dailyActivity.map(d => (
-          <div key={d.date} className="flex gap-3 items-center">
-            <span className="w-12">{d.date}</span>
-            <div className="flex-1 bg-gray-200 h-3 rounded-full">
-              <div
-                className="bg-blue-500 h-3 rounded-full"
-                style={{ width: `${(d.completions / max) * 100}%` }}
-              />
-            </div>
-            <span>{d.completions}</span>
-          </div>
-        ))}
-      </div>
+  {/* Hábitos concluídos */}
+  <div className="bg-white p-6 rounded-xl shadow">
+    <h2 className="font-bold text-lg mb-4">
+      Hábitos Concluídos (Últimos 7 Dias)
+    </h2>
+
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={dailyActivity}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="completions" />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+
+  {/* XP */}
+  <div className="bg-white p-6 rounded-xl shadow">
+    <h2 className="font-bold text-lg mb-4">
+      Progresso para o Próximo Nível
+    </h2>
+
+    <div className="mb-3 flex justify-between text-sm">
+      <span>Nível {stats.level}</span>
+      <span>
+        {stats.current_exp} / {stats.exp_to_next_level} XP
+      </span>
+    </div>
+
+    <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-green-500"
+        style={{
+          width: `${
+            (stats.current_exp / stats.exp_to_next_level) * 100
+          }%`
+        }}
+      />
+    </div>
+  </div>
+
+</div>
+
+{/* Recorde */}
+<div className="bg-white p-6 rounded-xl shadow mb-8">
+  <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+    <Trophy />
+    Recorde de Sequência
+  </h2>
+
+  <div className="flex items-center gap-4">
+    <Trophy size={50} className="text-yellow-500" />
+
+    <div>
+      <p className="text-4xl font-bold">
+        {uiStats.longestStreak}
+      </p>
+
+      <p className="text-gray-500">
+        dias consecutivos
+      </p>
+    </div>
+  </div>
+</div>
 
       {/*conquistas*/}
       <div className="bg-white p-6 rounded-xl shadow">
